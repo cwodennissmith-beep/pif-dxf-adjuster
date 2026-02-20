@@ -1,0 +1,2 @@
+streamlit>=1.30.0
+ezdxf>=0.18.0
