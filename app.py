@@ -218,17 +218,27 @@ def render_3d_section(product: shop.Product):
     host = find_configurator()
     if host is not None:
         try:
+            import json
             html = host.read_text(encoding="utf-8")
             # Hand the selected product's parameters to the configurator.
-            params = (
-                f'<script>window.PIF_PRODUCT = {{'
-                f'"id":"{product.id}","name":"{product.name}",'
-                f'"category":"{product.category}","material":"{product.material}",'
-                f'"width":{product.width_in},"height":{product.height_in},'
-                f'"depth":{product.depth_in}}};</script>'
-            )
-            st.components.v1.html(params + html, height=620, scrolling=False)
-            st.caption(f"3D configurator: {host.name}")
+            payload = {
+                "id": product.id,
+                "name": product.name,
+                "category": product.category,
+                "material": product.material,
+                "width": product.width_in,
+                "height": product.height_in,
+                "depth": product.depth_in,
+            }
+            params = f"<script>window.PIF_PRODUCT = {json.dumps(payload)};</script>"
+            # Inject inside <head> so the document stays in standards mode
+            # (prepending before <!DOCTYPE> would trigger quirks mode and break sizing).
+            if "<head>" in html:
+                html = html.replace("<head>", "<head>\n" + params, 1)
+            else:
+                html = params + html
+            st.components.v1.html(html, height=640, scrolling=False)
+            st.caption(f"3D configurator: {host.name} · live model for **{product.name}**")
         except Exception as exc:
             st.warning(f"Configurator found but failed to load: {exc}")
         return

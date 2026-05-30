@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  configurator_v6.html — PIF parametric 3D configurator            ║
+  ║  Parametric Interaction Framework                                 ║
+  ║                                                                  ║
+  ║  Self-contained Three.js viewer. Reads window.PIF_PRODUCT (set    ║
+  ║  by the Streamlit Showroom before this file is embedded) and       ║
+  ║  builds a parametric model from the product's category, material   ║
+  ║  and W/H/D. Falls back to a demo cabinet if no product is given.   ║
+  ║                                                                  ║
+  ║  The build path (buildModel) takes a params object and returns a   ║
+  ║  fresh THREE.Group, so multiple models can be built independently  ║
+  ║  (showroom multi-model ready). Old geometry is disposed on rebuild.║
+  ╚══════════════════════════════════════════════════════════════════╝
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PIF Configurator</title>
+<style>
+  :root { --bg: #0e1117; --panel: #1a1f2b; --ink: #e6e6e6; --muted: #8b93a7; --accent: #4c8bf5; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+  #app { position: relative; width: 100vw; height: 100vh; }
+  #canvas-wrap { position: absolute; inset: 0; }
+  canvas { display: block; }
+  #hud { position: absolute; top: 12px; left: 12px; background: rgba(26,31,43,.82);
+    border: 1px solid #2a3142; border-radius: 10px; padding: 10px 14px; backdrop-filter: blur(6px); max-width: 60%; }
+  #hud h1 { margin: 0 0 2px; font-size: 15px; font-weight: 600; }
+  #hud .meta { font-size: 12px; color: var(--muted); }
+  #controls { position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; gap: 8px;
+    flex-wrap: wrap; align-items: center; }
+  .chip { background: rgba(26,31,43,.82); border: 1px solid #2a3142; border-radius: 20px;
+    padding: 6px 12px; font-size: 12px; color: var(--ink); cursor: pointer; user-select: none; }
+  .chip:hover { border-color: var(--accent); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  #hint { position: absolute; bottom: 12px; right: 12px; font-size: 11px; color: var(--muted); }
+  #err { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+    text-align: center; padding: 24px; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="canvas-wrap"></div>
+  <div id="hud">
+    <h1 id="title">Loading…</h1>
+    <div class="meta" id="subtitle"></div>
+  </div>
+  <div id="controls">
+    <span class="chip" data-view="front">Front</span>
+    <span class="chip" data-view="iso">Iso</span>
+    <span class="chip" data-view="side">Side</span>
+    <span class="chip" data-view="top">Top</span>
+    <span class="chip" id="spin-toggle">⏸ Spin</span>
+    <span class="chip" id="explode-toggle">Explode</span>
+  </div>
+  <div id="hint">drag to orbit · scroll to zoom</div>
+  <div id="err"></div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+// ── Resolve product parameters (injected by the Showroom, with a demo fallback) ──
+const DEFAULT_PRODUCT = {
+  id: "demo", name: "Demo Base Cabinet", category: "Cabinet",
+  material: "Maple Plywood", width: 24, height: 30, depth: 24,
+};
+const P = Object.assign({}, DEFAULT_PRODUCT, window.PIF_PRODUCT || {});
+
+// ── Material → wood-tone color map ──
+const MATERIAL_COLORS = {
+  "MDF": 0xb0a48f, "Melamine": 0xe8e8e8, "Birch Plywood": 0xe3c89a,
+  "Maple Plywood": 0xd9b98a, "Maple": 0xd9b98a, "Red Oak": 0xc98a4b,
+  "White Oak": 0xc2a878, "Walnut": 0x5c4033, "Cherry": 0x7b3f2f,
+};
+const woodColor = MATERIAL_COLORS[P.material] ?? 0xc9a978;
+
+// ── Scene / renderer / camera ──
+const wrap = document.getElementById("canvas-wrap");
+const W = () => wrap.clientWidth, H = () => wrap.clientHeight;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0e1117);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(W(), H());
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+wrap.appendChild(renderer.domElement);
+
+const camera = new THREE.PerspectiveCamera(40, W() / H(), 0.1, 5000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+
+// ── Lighting ──
+scene.add(new THREE.HemisphereLight(0xffffff, 0x202430, 0.65));
+const key = new THREE.DirectionalLight(0xffffff, 1.4);
+key.position.set(40, 70, 50); key.castShadow = true;
+key.shadow.mapSize.set(1024, 1024);
+key.shadow.camera.near = 1; key.shadow.camera.far = 400;
+key.shadow.camera.left = -100; key.shadow.camera.right = 100;
+key.shadow.camera.top = 100; key.shadow.camera.bottom = -100;
+scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff, 0.4);
+fill.position.set(-50, 30, -30); scene.add(fill);
+
+// ── Shared materials (one per role → light render weight) ──
+const matBody  = new THREE.MeshStandardMaterial({ color: woodColor, roughness: 0.72, metalness: 0.04 });
+const matPanel = new THREE.MeshStandardMaterial({ color: woodColor, roughness: 0.55, metalness: 0.05 });
+const matBack  = new THREE.MeshStandardMaterial({ color: shade(woodColor, 0.82), roughness: 0.85 });
+const matMetal = new THREE.MeshStandardMaterial({ color: 0xb8bcc4, roughness: 0.35, metalness: 0.85 });
+const edgeMat  = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22 });
+
+function shade(hex, f) {
+  const c = new THREE.Color(hex); c.multiplyScalar(f); return c.getHex();
+}
+
+// ── Mesh helper: a box panel with soft edge lines ──
+function panel(w, h, d, mat, x, y, z) {
+  const g = new THREE.BoxGeometry(w, h, d);
+  const m = new THREE.Mesh(g, mat);
+  m.castShadow = true; m.receiveShadow = true;
+  m.position.set(x, y, z);
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(g), edgeMat);
+  m.add(edges);
+  m.userData.baseY = y; // for explode animation
+  return m;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  BUILD PATH — buildModel(params) → fresh THREE.Group (standalone)
+// ════════════════════════════════════════════════════════════════
+function buildModel(params) {
+  const g = new THREE.Group();
+  const W_ = params.width, H_ = params.height, D_ = params.depth;
+  const t = Math.max(0.5, Math.min(W_, H_) * 0.03); // panel thickness
+  const cat = (params.category || "Cabinet").toLowerCase();
+
+  const carcass = () => {
+    // sides, top, bottom, back — origin centered on floor (y=0 at base)
+    g.add(panel(t, H_, D_, matBody, -W_/2 + t/2, H_/2, 0));         // left
+    g.add(panel(t, H_, D_, matBody,  W_/2 - t/2, H_/2, 0));         // right
+    g.add(panel(W_, t, D_, matBody, 0, H_ - t/2, 0));               // top
+    g.add(panel(W_, t, D_, matBody, 0, t/2, 0));                    // bottom
+    g.add(panel(W_ - 2*t, H_ - 2*t, t, matBack, 0, H_/2, -D_/2 + t/2)); // back
+  };
+
+  const knob = (x, y) => {
+    const k = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 12), matMetal);
+    k.castShadow = true; k.position.set(x, y, D_/2 + 0.4); g.add(k);
+  };
+  const handle = (x, y, w) => {
+    const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.4, 0.6), matMetal);
+    b.castShadow = true; b.position.set(x, y, D_/2 + 0.5); g.add(b);
+  };
+
+  if (cat.includes("cabinet")) {
+    carcass();
+    const gap = 0.25, innerW = W_ - 2*t, innerH = H_ - 2*t;
+    const doorW = innerW/2 - gap;
+    const doorH = innerH - gap;
+    const z = D_/2 - t/2 + 0.2;
+    g.add(panel(doorW, doorH, t*0.7, matPanel, -innerW/4, H_/2, z));
+    g.add(panel(doorW, doorH, t*0.7, matPanel,  innerW/4, H_/2, z));
+    knob( -gap*1.5, H_/2); knob(gap*1.5, H_/2);
+
+  } else if (cat.includes("drawer")) {
+    carcass();
+    const n = 3, innerH = H_ - 2*t, innerW = W_ - 2*t, gap = 0.25;
+    const dh = innerH/n - gap, z = D_/2 - t/2 + 0.2;
+    for (let i = 0; i < n; i++) {
+      const cy = t + (i + 0.5) * (innerH/n);
+      g.add(panel(innerW - gap, dh, t*0.7, matPanel, 0, cy, z));
+      handle(0, cy, Math.min(innerW*0.4, 8));
+    }
+
+  } else if (cat.includes("shelf") || cat.includes("bookcase")) {
+    // open carcass + shelves
+    g.add(panel(t, H_, D_, matBody, -W_/2 + t/2, H_/2, 0));
+    g.add(panel(t, H_, D_, matBody,  W_/2 - t/2, H_/2, 0));
+    g.add(panel(W_, t, D_, matBody, 0, H_ - t/2, 0));
+    g.add(panel(W_, t, D_, matBody, 0, t/2, 0));
+    g.add(panel(W_ - 2*t, H_ - 2*t, t, matBack, 0, H_/2, -D_/2 + t/2));
+    const shelves = Math.max(2, Math.round(H_ / 14));
+    for (let i = 1; i < shelves; i++) {
+      const y = (H_ / shelves) * i;
+      g.add(panel(W_ - 2*t, t, D_ - t, matBody, 0, y, t/2));
+    }
+
+  } else if (cat.includes("table") || cat.includes("desk")) {
+    const topT = Math.max(t, 1.2);
+    g.add(panel(W_, topT, D_, matPanel, 0, H_ - topT/2, 0)); // top
+    const legW = Math.max(1.5, t*1.4), inset = legW;
+    const legH = H_ - topT;
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+      g.add(panel(legW, legH, legW, matBody,
+        sx * (W_/2 - inset), legH/2, sz * (D_/2 - inset)));
+    }
+
+  } else {
+    carcass();
+  }
+
+  g.userData.size = new THREE.Vector3(W_, H_, D_);
+  return g;
+}
+
+// ── Ground plane for shadow ──
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(2000, 2000),
+  new THREE.ShadowMaterial({ opacity: 0.28 })
+);
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; ground.position.y = 0;
+scene.add(ground);
+
+// ── Dispose helper (clean swap, no leaks) ──
+function disposeGroup(group) {
+  group.traverse((o) => {
+    if (o.geometry) o.geometry.dispose();
+    // shared materials are reused → don't dispose them here
+  });
+  scene.remove(group);
+}
+
+// ── Mount the model ──
+let model = null;
+function mount(params) {
+  if (model) disposeGroup(model);
+  model = buildModel(params);
+  scene.add(model);
+  frameCamera(params);
+}
+
+function frameCamera(params) {
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  controls.target.copy(center);
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const dist = maxDim / (2 * Math.tan((camera.fov * Math.PI/180) / 2)) * 1.7;
+  setView("iso", center, dist);
+}
+
+function setView(kind, center, dist) {
+  if (!model) return;
+  const box = new THREE.Box3().setFromObject(model);
+  center = center || box.getCenter(new THREE.Vector3());
+  if (dist == null) dist = camera.position.distanceTo(controls.target);
+  const positions = {
+    front: [0, center.y, dist],
+    side:  [dist, center.y, 0],
+    top:   [0.01, center.y + dist, 0.01],
+    iso:   [dist*0.7, center.y + dist*0.55, dist*0.7],
+  };
+  const [x, y, z] = positions[kind] || positions.iso;
+  camera.position.set(center.x + x, y, center.z + z);
+  controls.target.copy(center);
+  controls.update();
+}
+
+// ── UI wiring ──
+document.querySelectorAll("[data-view]").forEach((el) => {
+  el.addEventListener("click", () => setView(el.dataset.view));
+});
+let spinning = true;
+const spinBtn = document.getElementById("spin-toggle");
+spinBtn.classList.add("active");
+spinBtn.addEventListener("click", () => {
+  spinning = !spinning;
+  spinBtn.textContent = spinning ? "⏸ Spin" : "▶ Spin";
+  spinBtn.classList.toggle("active", spinning);
+});
+let exploded = false;
+document.getElementById("explode-toggle").addEventListener("click", (e) => {
+  exploded = !exploded;
+  e.target.classList.toggle("active", exploded);
+});
+
+// ── HUD ──
+document.getElementById("title").textContent = P.name;
+document.getElementById("subtitle").textContent =
+  `${P.category} · ${P.material} · ${P.width}"W × ${P.height}"H × ${P.depth}"D`;
+
+// ── Resize ──
+function onResize() {
+  camera.aspect = W() / H(); camera.updateProjectionMatrix();
+  renderer.setSize(W(), H());
+}
+window.addEventListener("resize", onResize);
+new ResizeObserver(onResize).observe(wrap);
+
+// ── Render loop ──
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+  if (spinning && model) model.rotation.y += dt * 0.4;
+  if (model) {
+    const target = exploded ? 1 : 0;
+    model.children.forEach((child) => {
+      if (child.userData.baseY == null) return;
+      const lift = (child.userData.baseY) * 0.6 * target;
+      child.position.y += (child.userData.baseY + lift - child.position.y) * 0.15;
+    });
+  }
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+// ── Boot ──
+try {
+  mount(P);
+  animate();
+} catch (e) {
+  const err = document.getElementById("err");
+  err.style.display = "flex";
+  err.textContent = "3D view failed to initialize: " + e.message;
+  console.error(e);
+}
+</script>
+</body>
+</html>
