@@ -1,0 +1,90 @@
+{
+  "_meta": {
+    "name": "companion-relationship reference table",
+    "layer": "Layer 4 — anthropometric / assembly-ergonomic chain (companion subset)",
+    "generated": "2026-05-30",
+    "dispatch": "VALIDATION-OF-PIF (companion-relationship layer)",
+    "status": "SEED — all numbers are unverified placeholders pending an interior-design source",
+    "tier_default": "advisory",
+    "value_or_band_schema": {
+      "unit": "in",
+      "basis": "offset_from_ref  (acceptable related range = ref + [min,max])  |  absolute  (related compared directly to [min,max])",
+      "note": "free-text semantics for the band"
+    },
+    "WARNING": "This table is reference DATA only. The PIF-Trigamma grammar it presumes (part types, role fields, named dimensions like arm_height/top_height) DOES NOT EXIST in this repo. See docs/decisions/VALIDATION-OF-PIF-01-schema-read.md. None of the dimension names below resolve to a real schema field yet."
+  },
+  "entries": [
+    {
+      "id": "couch.arm_to_endtable_top",
+      "role_a": "couch",
+      "role_b": "end_table",
+      "ref_dimension_a": "arm_height",
+      "related_dimension_b": "top_height",
+      "relationship_type": "match",
+      "value_or_band": { "basis": "offset_from_ref", "min": -1.0, "max": 1.0, "note": "end-table top ~level with couch arm (~equal, ±1\")" },
+      "tier": "advisory",
+      "source": "published-seed",
+      "verified": false
+    },
+    {
+      "id": "couch.seat_to_coffee_top",
+      "role_a": "couch",
+      "role_b": "coffee_table",
+      "ref_dimension_a": "seat_height",
+      "related_dimension_b": "top_height",
+      "relationship_type": "differential",
+      "value_or_band": { "basis": "offset_from_ref", "min": -4.0, "max": 0.0, "note": "coffee top within 0 to 4\" BELOW couch seat" },
+      "tier": "advisory",
+      "source": "published-seed",
+      "verified": false
+    },
+    {
+      "id": "couch.front_to_coffee_edge",
+      "role_a": "couch",
+      "role_b": "coffee_table",
+      "ref_dimension_a": "couch_front",
+      "related_dimension_b": "table_edge",
+      "relationship_type": "distance",
+      "value_or_band": { "basis": "absolute", "min": 14.0, "max": 18.0, "note": "walking/legroom gap between couch front and table edge" },
+      "tier": "advisory",
+      "source": "published-seed",
+      "verified": false
+    },
+    {
+      "id": "bed.mattress_to_nightstand_top",
+      "role_a": "bed",
+      "role_b": "nightstand",
+      "ref_dimension_a": "mattress_height",
+      "related_dimension_b": "top_height",
+      "relationship_type": "match",
+      "value_or_band": { "basis": "offset_from_ref", "min": 0.0, "max": 2.0, "note": "nightstand top ~level with mattress to +2\"" },
+      "tier": "advisory",
+      "source": "published-seed",
+      "verified": false
+    },
+    {
+      "id": "desk.chair_seat_to_worksurface",
+      "role_a": "desk",
+      "role_b": "desk_chair",
+      "ref_dimension_a": "seat_height",
+      "related_dimension_b": "work_surface_height",
+      "relationship_type": "differential",
+      "value_or_band": { "basis": "offset_from_ref", "min": 10.0, "max": 12.0, "note": "work surface 10-12\" ABOVE chair seat" },
+      "tier": "advisory",
+      "source": "published-seed",
+      "verified": false
+    },
+    {
+      "id": "dining.apron_to_chair_seat",
+      "role_a": "dining_table",
+      "role_b": "dining_chair",
+      "ref_dimension_a": "apron_underside",
+      "related_dimension_b": "seat_height",
+      "relationship_type": "differential",
+      "value_or_band": { "basis": "offset_from_ref", "min": -14.0, "max": -7.0, "note": "MINIMUM thigh clearance: seat must sit 7-9\"+ below apron underside; band lower bound is a reasonable floor, not a hard max" },
+      "tier": "advisory",
+      "source": "published-seed",
+      "verified": false
+    }
+  ]
+}
