@@ -4,7 +4,7 @@
     "layer": "Layer 4 — anthropometric / assembly-ergonomic chain (companion subset)",
     "generated": "2026-05-30",
     "dispatch": "VALIDATION-OF-PIF (companion-relationship layer)",
-    "status": "SEED — all numbers are unverified placeholders pending an interior-design source",
+    "status": "VERIFIED 2026-05-30 against published interior-design / ergonomics guidance; bands widened/tightened from the original seed where sources disagreed (see verified_against per entry). Numbers remain rules-of-thumb, not hard limits — tier stays advisory.",
     "tier_default": "advisory",
     "value_or_band_schema": {
       "unit": "in",
@@ -21,10 +21,11 @@
       "ref_dimension_a": "arm_height",
       "related_dimension_b": "top_height",
       "relationship_type": "match",
-      "value_or_band": { "basis": "offset_from_ref", "min": -1.0, "max": 1.0, "note": "end-table top ~level with couch arm (~equal, ±1\")" },
+      "value_or_band": { "basis": "offset_from_ref", "min": -4.0, "max": 2.0, "note": "end-table top within ~2\" above to ~4\" below couch arm; 5\"+ taller reads awkward" },
       "tier": "advisory",
       "source": "published-seed",
-      "verified": false
+      "verified": true,
+      "verified_against": "Widely cited rule: end table within 2\" of sofa arm height; 3-4\" below still looks intentional, 5\"+ too tall is awkward. (rapportfurniture.com, ballarddesigns.com, eurekaergonomic.com). Seed was ±1\" -> widened to -4..+2."
     },
     {
       "id": "couch.seat_to_coffee_top",
@@ -33,10 +34,11 @@
       "ref_dimension_a": "seat_height",
       "related_dimension_b": "top_height",
       "relationship_type": "differential",
-      "value_or_band": { "basis": "offset_from_ref", "min": -4.0, "max": 0.0, "note": "coffee top within 0 to 4\" BELOW couch seat" },
+      "value_or_band": { "basis": "offset_from_ref", "min": -2.0, "max": 0.0, "note": "coffee top level with sofa seat cushion to ~2\" below; >2\" below forces awkward bending" },
       "tier": "advisory",
       "source": "published-seed",
-      "verified": false
+      "verified": true,
+      "verified_against": "Dominant rule: coffee table = sofa seat-cushion height or 1-2\" lower; >~5cm/2\" below strains the back (bobvila.com, roveconcepts.com, petramadalena.com). Seed was -4..0 -> tightened to -2..0."
     },
     {
       "id": "couch.front_to_coffee_edge",
@@ -45,10 +47,11 @@
       "ref_dimension_a": "couch_front",
       "related_dimension_b": "table_edge",
       "relationship_type": "distance",
-      "value_or_band": { "basis": "absolute", "min": 14.0, "max": 18.0, "note": "walking/legroom gap between couch front and table edge" },
+      "value_or_band": { "basis": "absolute", "min": 14.0, "max": 18.0, "note": "legroom/reach gap between couch front and table edge; ~15\" is the sweet spot, 12\" absolute minimum, 18\"+ for deep sofas" },
       "tier": "advisory",
       "source": "published-seed",
-      "verified": false
+      "verified": true,
+      "verified_against": "Confirmed: ideal 14-18\" (35-45cm), 15\" 'goldilocks', min 12\" (2modern.com, apartmenttherapy.com, hernest.com). Seed 14-18 unchanged."
     },
     {
       "id": "bed.mattress_to_nightstand_top",
@@ -57,10 +60,11 @@
       "ref_dimension_a": "mattress_height",
       "related_dimension_b": "top_height",
       "relationship_type": "match",
-      "value_or_band": { "basis": "offset_from_ref", "min": 0.0, "max": 2.0, "note": "nightstand top ~level with mattress to +2\"" },
+      "value_or_band": { "basis": "offset_from_ref", "min": 0.0, "max": 2.0, "note": "nightstand top level with mattress to +2\" (tight 'safe zone'); broader tolerance -2 to +6\" is still usable" },
       "tier": "advisory",
       "source": "published-seed",
-      "verified": false
+      "verified": true,
+      "verified_against": "Confirmed: top of nightstand level with mattress, +/-1-2\" comfort margin; safe zone level to +2\"; broad range mattress-top -2 to +6\" (sicotas.com, julieblanner.com, froy.com). Seed 0..+2 kept as the tight band."
     },
     {
       "id": "desk.chair_seat_to_worksurface",
@@ -69,10 +73,11 @@
       "ref_dimension_a": "seat_height",
       "related_dimension_b": "work_surface_height",
       "relationship_type": "differential",
-      "value_or_band": { "basis": "offset_from_ref", "min": 10.0, "max": 12.0, "note": "work surface 10-12\" ABOVE chair seat" },
+      "value_or_band": { "basis": "offset_from_ref", "min": 8.0, "max": 14.0, "note": "work surface 8-14\" above seat (ideal ~10-12\"); true target is elbows at ~90 deg, so this differential is a guide, not a hard rule" },
       "tier": "advisory",
       "source": "published-seed",
-      "verified": false
+      "verified": true,
+      "verified_against": "Desk 28-30\" and seat 16-21\" imply an 8-14\" spread; ergonomics keys off elbow-at-90 not a fixed gap (omnicalculator.com desk-height, thehumansolution.com, urbanicafurniture.com). Seed 10-12 -> widened to 8-14 with 10-12 noted as ideal."
     },
     {
       "id": "dining.apron_to_chair_seat",
@@ -81,10 +86,11 @@
       "ref_dimension_a": "apron_underside",
       "related_dimension_b": "seat_height",
       "relationship_type": "differential",
-      "value_or_band": { "basis": "offset_from_ref", "min": -14.0, "max": -7.0, "note": "MINIMUM thigh clearance: seat must sit 7-9\"+ below apron underside; band lower bound is a reasonable floor, not a hard max" },
+      "value_or_band": { "basis": "offset_from_ref", "min": -14.0, "max": -7.0, "note": "MINIMUM thigh clearance: seat sits at least ~7-7.5\" below apron underside (95th-pct male thigh); band lower bound -14\" is a chosen floor, not a sourced hard max" },
       "tier": "advisory",
       "source": "published-seed",
-      "verified": false
+      "verified": true,
+      "verified_against": "Confirmed: min 7-7.5\" thigh clearance to apron underside (95th-pct male); derives from ~10-12\" seat-to-tabletop minus ~4\" apron (briansbenham.com, venturainteriors.com, woodworkersjournal.com). Seed >=7-9 kept; max offset set to -7 (>=7\" clearance)."
     }
   ]
 }
