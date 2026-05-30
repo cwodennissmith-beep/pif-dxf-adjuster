@@ -1,0 +1,19 @@
+{
+  "generated": "2026-05-30",
+  "generator": "VALIDATION-OF-PIF docs manifest",
+  "doc_count": 2,
+  "docs": [
+    {
+      "path": "docs/decisions/VALIDATION-OF-PIF-01-schema-read.md",
+      "bytes": 5968,
+      "sha256": "baddb98db557a66d593d8364d3ff9b6a88b41c9f9abc17e17b7911f12b76a143",
+      "lines": 102
+    },
+    {
+      "path": "docs/specs/pif-trigamma-validation-model.md",
+      "bytes": 12334,
+      "sha256": "5973ee00cf186c26b9cfc9be410e1b58e04e3df5ceea384b3eb22b77b580cef4",
+      "lines": 258
+    }
+  ]
+}
