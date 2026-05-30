@@ -1,8 +1,14 @@
 {
   "generated": "2026-05-30",
   "generator": "VALIDATION-OF-PIF docs manifest",
-  "doc_count": 2,
+  "doc_count": 3,
   "docs": [
+    {
+      "path": "docs/VALIDATION-OF-PIF-handoff.md",
+      "bytes": 3982,
+      "sha256": "da44faa1b3b17ceedb4ff5d1a23c907608e4632ef8b74c64cc60e8318c29fef5",
+      "lines": 68
+    },
     {
       "path": "docs/decisions/VALIDATION-OF-PIF-01-schema-read.md",
       "bytes": 5968,
