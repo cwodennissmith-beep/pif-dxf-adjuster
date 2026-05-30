@@ -13,8 +13,9 @@ venv/
 env/
 
 # Test / build artifacts
-*.dxf
-!sample*.dxf
+# Note: demo catalog DXFs live in data/dxf/ and ARE tracked.
+/*.dxf
+*_adjusted.dxf
 .pytest_cache/
 
 # OS / editor

@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "products": [
+    {
+      "id": "cab-base-24",
+      "name": "24\" Base Cabinet",
+      "category": "Cabinet",
+      "material": "Maple Plywood",
+      "width_in": 24.0,
+      "height_in": 30.0,
+      "depth_in": 24.0,
+      "price": 172.5,
+      "currency": "USD",
+      "dxf_file": "cab-base-24.dxf",
+      "description": "Maple Plywood cabinet, 24\"\u00d730\"\u00d724\". Demo product \u2014 adjust to your spec.",
+      "price_note": "Estimate: 5.00 sq ft face \u00d7 $16/sq ft (Maple Plywood), \u00d71 (Cabinet), depth \u00d71.50"
+    },
+    {
+      "id": "cab-drawer-18",
+      "name": "18\" 3-Drawer Base",
+      "category": "Drawer",
+      "material": "Birch Plywood",
+      "width_in": 18.0,
+      "height_in": 30.0,
+      "depth_in": 24.0,
+      "price": 78.0,
+      "currency": "USD",
+      "dxf_file": "cab-drawer-18.dxf",
+      "description": "Birch Plywood drawer, 18\"\u00d730\"\u00d724\". Demo product \u2014 adjust to your spec.",
+      "price_note": "Estimate: 3.75 sq ft face \u00d7 $12/sq ft (Birch Plywood), \u00d70.65 (Drawer), depth \u00d71.50"
+    },
+    {
+      "id": "shelf-open-36",
+      "name": "36\" Open Bookcase",
+      "category": "Bookcase",
+      "material": "Red Oak",
+      "width_in": 36.0,
+      "height_in": 48.0,
+      "depth_in": 12.0,
+      "price": 312.12,
+      "currency": "USD",
+      "dxf_file": "shelf-open-36.dxf",
+      "description": "Red Oak bookcase, 36\"\u00d748\"\u00d712\". Demo product \u2014 adjust to your spec.",
+      "price_note": "Estimate: 12.00 sq ft face \u00d7 $16/sq ft (Red Oak), \u00d71.1 (Bookcase), depth \u00d71.25"
+    },
+    {
+      "id": "tbl-coffee-48",
+      "name": "48\" Coffee Table",
+      "category": "Table",
+      "material": "Walnut",
+      "width_in": 48.0,
+      "height_in": 24.0,
+      "depth_in": 18.0,
+      "price": 480.15,
+      "currency": "USD",
+      "dxf_file": "tbl-coffee-48.dxf",
+      "description": "Walnut table, 48\"\u00d724\"\u00d718\". Demo product \u2014 adjust to your spec.",
+      "price_note": "Estimate: 8.00 sq ft face \u00d7 $32/sq ft (Walnut), \u00d71.2 (Table), depth \u00d71.38"
+    },
+    {
+      "id": "cab-wall-30",
+      "name": "30\" Wall Cabinet",
+      "category": "Cabinet",
+      "material": "White Oak",
+      "width_in": 30.0,
+      "height_in": 24.0,
+      "depth_in": 12.0,
+      "price": 181.25,
+      "currency": "USD",
+      "dxf_file": "cab-wall-30.dxf",
+      "description": "White Oak cabinet, 30\"\u00d724\"\u00d712\". Demo product \u2014 adjust to your spec.",
+      "price_note": "Estimate: 5.00 sq ft face \u00d7 $22/sq ft (White Oak), \u00d71 (Cabinet), depth \u00d71.25"
+    }
+  ]
+}

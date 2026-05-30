@@ -1,2 +1,5 @@
 streamlit>=1.30.0
-ezdxf>=0.18.0
+ezdxf[draw]>=1.0.0
+matplotlib>=3.6.0
+# Optional: enables AI-suggested pricing in the Showroom (needs ANTHROPIC_API_KEY).
+anthropic>=0.40.0
